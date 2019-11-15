@@ -329,11 +329,11 @@ public class PokemonGUI extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 if (acao.equals("alterar")) {
                     CrudPokemon crudpokemonAntigo = crudpokemon;
-                    SimpleDateFormat formato = new SimpleDateFormat("yyyy/MM/dd");
-                    SimpleDateFormat sdfEua = new SimpleDateFormat("dd-MM-yyyy");
+                    SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+                    SimpleDateFormat sdfEua = new SimpleDateFormat("yyyy-MM-dd");
                     try {
                         crudpokemon.setNome(String.valueOf(tfNome.getText()));
-                        crudpokemon.setDatadeNasc(Date.valueOf(tfDatadeNasc.getText()));
+                        crudpokemon.setDatadeNasc(Date.valueOf(sdfEua.format(formato.parse(tfDatadeNasc.getText()))));
                         crudpokemon.setEvoluiu(cbEvoluiu.isSelected());
                         crudpokemon.setCaracteristicas(Integer.valueOf(tfCaracteristicas.getText()));
                         crudpokemon.setPeso(Float.valueOf(tfPeso.getText()));
