@@ -1,5 +1,6 @@
 package CrudPokemon;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class CrudPokemon {
@@ -87,7 +88,7 @@ public class CrudPokemon {
     @Override
 
     public String toString() {
-
-        return String.valueOf(Id) + ";" + Nome + ";" + String.valueOf(DatadeNasc) + ";" + String.valueOf(Evoluiu) + ";" + String.valueOf(Caracteristicas) + ";" + String.valueOf(Peso);
+        SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+        return String.valueOf(Id) + ";" + Nome + ";" + String.valueOf(formato.format(DatadeNasc)) + ";" + String.valueOf(Evoluiu) + ";" + String.valueOf(Caracteristicas) + ";" + String.valueOf(Peso);
     }
 }

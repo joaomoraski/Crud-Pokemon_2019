@@ -41,9 +41,7 @@ public class PokemonGUI extends JDialog {
     private JTextField tfNome = new JTextField(20);
     private JLabel lbDatadeNasc = new JLabel("DatadeNasc");
     private DateTextField tfDatadeNasc = new DateTextField();
-    private JLabel lbEvoluiu = new JLabel("Evoluiu");
     private JCheckBox cbEvoluiu = new JCheckBox("Evoluiu", false);
-    private JTextField tfEvoluiu = new JTextField(20);
     private JLabel lbCaracteristicas = new JLabel("Caracteristicas");
     private JTextField tfCaracteristicas = new JTextField(20);
     private JLabel lbPeso = new JLabel("Peso");
@@ -169,8 +167,9 @@ public class PokemonGUI extends JDialog {
                     for (String linha : listaStringCsv) {
                         aux = linha.split(";");
                         SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+                        SimpleDateFormat sdfEua = new SimpleDateFormat("yyyy-MM-dd");
                         try {
-                            t = new CrudPokemon(Integer.valueOf(aux[0]), String.valueOf(aux[1]), Date.valueOf(aux[2]), Boolean.valueOf(aux[3].equals("Sim") ? true : false), Integer.valueOf(aux[4]), Float.valueOf(aux[5]));
+                            t = new CrudPokemon(Integer.valueOf(aux[0]), String.valueOf(aux[1]), Date.valueOf(sdfEua.format(formato.parse(aux[2]))), Boolean.valueOf(aux[3].equals("Sim") ? true : false), Integer.valueOf(aux[4]), Float.valueOf(aux[5]));
                             controle.adicionar(t);
                         } catch (Exception err) {
                             System.out.println("Deu ruim " + err);
@@ -340,7 +339,7 @@ public class PokemonGUI extends JDialog {
                         controle.alterar(crudpokemon, crudpokemonAntigo);
                         texto.setText("Registro alterado\n\n\n\n\n");
                     } catch (Exception err) {
-                        System.out.println("Deu ruim jijijijij" + err);
+                        System.out.println("Deu ruim " + err);
                     }
                 } else {
                     crudpokemon = new CrudPokemon();
