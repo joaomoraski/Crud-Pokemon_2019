@@ -2,9 +2,10 @@ package CrudPokemon;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Container;
-import java.awt.Dialog;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
@@ -30,9 +32,20 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 
 public class PokemonGUI extends JDialog {
+
+    public ImageIcon criarImageIcon(String caminho, String descricao) {
+        java.net.URL imgURL = getClass().getResource(caminho);
+        if (imgURL != null) {
+            return new ImageIcon(imgURL, descricao);
+        } else {
+            System.err.println("Não foi possivel carregar o arquivo de imagem: " + caminho);
+            return null;
+        }
+    }
 
     private Container cp;
     private JLabel lbId = new JLabel("ID");
@@ -45,6 +58,7 @@ public class PokemonGUI extends JDialog {
     private JLabel lbCaracteristicas = new JLabel("Caracteristicas");
     private JTextField tfCaracteristicas = new JTextField(20);
     private JLabel lbPeso = new JLabel("Peso");
+    private JLabel lbFoto = new JLabel("");
     private JTextField tfPeso = new JTextField(20);
     private JButton btAdicionar = new JButton("Adicionar");
     private JButton btListar = new JButton("Listar");
@@ -60,13 +74,18 @@ public class PokemonGUI extends JDialog {
     private JPanel painelNorte = new JPanel();
     private JPanel painelCentro = new JPanel();
     private JPanel painelSul = new JPanel();
+    private JPanel painelFoto = new JPanel();
+
     private JTextArea texto = new JTextArea();
+    JLabel labelFoto = new JLabel("");
     private JScrollPane scrollTexto = new JScrollPane();
     private JScrollPane scrollTabela = new JScrollPane();
     private String acao = "";
     private String chavePrimaria = "";
     private PokemonControle controle = new PokemonControle();
-    private CrudPokemon crudpokemon = new CrudPokemon();
+    CrudPokemon crudpokemon = new CrudPokemon();
+    CopiaImagem copia = new CopiaImagem();
+    private ManipulaImagem manipulaImagem = new ManipulaImagem();
     String[] colunas = new String[]{"Id", "Nome", "DatadeNasc", "Evoluiu", "Caracteristicas", "Peso"};
 
     String[][] dados = new String[0][4];
@@ -79,8 +98,8 @@ public class PokemonGUI extends JDialog {
     public PokemonGUI() {
         String caminhoENomeDoArquivo = "DadosCrudPokemon.csv";
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(600, 400);
-        setTitle("CRUD Pkemon - V01");
+        setSize(650, 600);
+        setTitle("CRUD Pokemon - V01");
         cp = getContentPane();
 
         ManipulaImagem manipulaImagem = new ManipulaImagem();
@@ -115,8 +134,17 @@ public class PokemonGUI extends JDialog {
         cp.add(painelNorte, BorderLayout.NORTH);
         cp.add(painelCentro, BorderLayout.CENTER);
         cp.add(painelSul, BorderLayout.SOUTH);
+        cp.add(painelFoto, BorderLayout.EAST);
+
         cardLayout = new CardLayout();
         painelSul.setLayout(cardLayout);
+
+        painelFoto.setLayout(new GridLayout(1, 1));
+        painelFoto.add(lbFoto);
+        lbFoto.setVisible(true);
+        icon = manipulaImagem.criaIcon("/fotos/download.png", 250, 300);
+        lbFoto.setIcon(icon);
+
         painel1.add(scrollTexto);
         painel2.add(scrollTabela);
         texto.setText("\n\n\n\n\n\n");
@@ -156,6 +184,8 @@ public class PokemonGUI extends JDialog {
         tfCaracteristicas.setEditable(false);
         tfPeso.setEditable(false);
         texto.setEditable(false);
+
+        Tools auxTools = new Tools();
         btCarregarDados.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -169,7 +199,7 @@ public class PokemonGUI extends JDialog {
                         SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
                         SimpleDateFormat sdfEua = new SimpleDateFormat("yyyy-MM-dd");
                         try {
-                            t = new CrudPokemon(Integer.valueOf(aux[0]), String.valueOf(aux[1]), Date.valueOf(sdfEua.format(formato.parse(aux[2]))), Boolean.valueOf(aux[3].equals("Sim") ? true : false), Integer.valueOf(aux[4]), Float.valueOf(aux[5]));
+                            t = new CrudPokemon(Integer.valueOf(aux[0]), String.valueOf(aux[1]), Date.valueOf(sdfEua.format(formato.parse(aux[2]))), Boolean.valueOf(aux[3].equals("true") ? true : false), Integer.valueOf(aux[4]), Float.valueOf(aux[5]));
                             controle.adicionar(t);
                         } catch (Exception err) {
                             System.out.println("Deu ruim " + err);
@@ -236,6 +266,9 @@ public class PokemonGUI extends JDialog {
                         tfCaracteristicas.setText("");
                         tfPeso.setText("");
                         texto.setText("Não encontrou na lista - pode Adicionar\n\n\n");
+
+                        ImageIcon icon = manipulaImagem.criaIcon("/fotos/0a.png", 300, 300);
+                        lbFoto.setIcon(icon);
                     } else {
                         SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
                         texto.setText("Encontrou na lista - pode Alterar ou Excluir\n\n\n");
@@ -251,6 +284,25 @@ public class PokemonGUI extends JDialog {
                         tfCaracteristicas.setEditable(false);
                         tfPeso.setText(String.valueOf(crudpokemon.getPeso()));
                         tfPeso.setEditable(false);
+                        lbFoto.setVisible(true);
+                        String aux = String.valueOf(crudpokemon.getId()).trim();
+                        String origem = "src/fotos/" + aux + ".png";
+                        File img = new File(origem);//ler novamente a imagem
+                        ImageIcon icone;
+                        if (img.exists()) {
+                            icone = new javax.swing.ImageIcon(img.getAbsolutePath());
+
+                        } else {
+                            origem = "src/fotos/0a.png";
+                            img = new File(origem);//ler novamente a imagem
+                            icone = new javax.swing.ImageIcon(img.getAbsolutePath());
+                        }
+                        //fim da modificação
+
+                        Image imagemAux;
+                        imagemAux = icone.getImage();
+                        icone.setImage(imagemAux.getScaledInstance(300, 300, Image.SCALE_FAST));
+                        lbFoto.setIcon(icone);
                     }
                 }
             }
@@ -275,6 +327,9 @@ public class PokemonGUI extends JDialog {
                 btExcluir.setVisible(false);
                 btAdicionar.setVisible(false);
                 texto.setText("Preencha os atributos\n\n\n\n\n");
+                lbFoto.setVisible(true);
+                ImageIcon icon = manipulaImagem.criaIcon("/fotos/0a.png", 300, 300);
+                lbFoto.setIcon(icon);
             }
         });
         btAlterar.addActionListener(new ActionListener() {
@@ -297,6 +352,9 @@ public class PokemonGUI extends JDialog {
                 cbEvoluiu.setEnabled(true);
                 tfCaracteristicas.setEditable(true);
                 tfPeso.setEditable(true);
+                lbFoto.setVisible(true);
+                ImageIcon icon = manipulaImagem.criaIcon("/fotos/" + String.valueOf(crudpokemon.getId()) + ".png", 300, 300);//coloca imagem do crud
+                lbFoto.setIcon(icon);
             }
         });
         btCancelar.addActionListener(new ActionListener() {
@@ -321,6 +379,8 @@ public class PokemonGUI extends JDialog {
                 tfId.requestFocus();
                 tfId.selectAll();
                 texto.setText("Cancelou\n\n\n\n\n");
+                ImageIcon icon = manipulaImagem.criaIcon("/fotos/0a.png", 300, 300);//coloca imagem padrão
+                lbFoto.setIcon(icon);
             }
         });
         btSalvar.addActionListener(new ActionListener() {
@@ -375,9 +435,12 @@ public class PokemonGUI extends JDialog {
                 tfPeso.setText("");
                 tfNome.setEditable(false);
                 tfDatadeNasc.setEditable(false);
+                ImageIcon icon = manipulaImagem.criaIcon("/fotos/0a.png", 300, 300);//coloca imagem padrão
+                lbFoto.setIcon(icon);
                 cbEvoluiu.setEnabled(false);
                 tfCaracteristicas.setEditable(false);
                 tfPeso.setEditable(false);
+                
             }
         });
         btListar.addActionListener(new ActionListener() {
@@ -398,6 +461,8 @@ public class PokemonGUI extends JDialog {
                 painel2.add(scrollTabela);
                 scrollTabela.setViewportView(tabela);
                 model.setDataVector(dados, colunas);
+                ImageIcon icon = manipulaImagem.criaIcon("/fotos/0.png", 300, 300);//coloca imagem padrão
+                lbFoto.setIcon(icon);
 
                 btAlterar.setVisible(false);
                 btExcluir.setVisible(false);
@@ -412,7 +477,9 @@ public class PokemonGUI extends JDialog {
                         == JOptionPane.showConfirmDialog(null,
                                 "Confirma a exclusão do registro <Nome = " + crudpokemon.getNome() + ">?", "Confirm",
                                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+                    String aux = String.valueOf(crudpokemon.getId()).trim();
                     controle.excluir(crudpokemon);
+                    copia.exclui("src/fotos/" + aux + ".png");
                     texto.setText("Excluiu o registro de " + crudpokemon.getId() + " - " + crudpokemon.getNome() + "\n\n\n\n\n");
                 } else {
                     texto.setText("Não excluiu o registro de " + crudpokemon.getId() + " - " + crudpokemon.getNome() + "\n\n\n\n\n");
@@ -431,6 +498,35 @@ public class PokemonGUI extends JDialog {
                 cbEvoluiu.setEnabled(true);
                 tfCaracteristicas.setText("");
                 tfPeso.setText("");
+                ImageIcon icon = manipulaImagem.criaIcon("/fotos/0.png", 300, 300);//coloca imagem padrão
+                lbFoto.setIcon(icon);
+
+            }
+        });
+
+        lbFoto.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (acao.equals("alterar") || acao.equals("adicionar")) {
+                    JFileChooser fc = new JFileChooser();
+                    fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    if (fc.showOpenDialog(cp) == JFileChooser.APPROVE_OPTION) {
+                        File img = fc.getSelectedFile();
+                        String origem = fc.getSelectedFile().getAbsolutePath();
+                        try {
+                            ImageIcon icone = new javax.swing.ImageIcon(img.getAbsolutePath());
+                            Image imagemAux;
+                            imagemAux = icone.getImage();
+                            icone.setImage(imagemAux.getScaledInstance(300, 300, Image.SCALE_FAST));
+                            lbFoto.setIcon(icone);
+                            String destino = "C:/Users/jvmor/Documents/NetBeansProjects/Sistema-Prova-LP2/src/fotos/" + String.valueOf(tfId.getText()) + ".png";
+                            copia.copiar(origem, destino);
+
+                        } catch (Exception ex) {
+                            System.out.println("Erro: " + ex.getMessage());
+                        }
+                    }
+                }
             }
         });
 
@@ -464,8 +560,12 @@ public class PokemonGUI extends JDialog {
                 dispose();
             }
         });
+        CentroDoMonitorMaior centroDoMonitorMaior = new CentroDoMonitorMaior();
+        setLocation(centroDoMonitorMaior.getCentroMonitorMaior(this));
+        setLocationRelativeTo(null);
         setModal(true);
         btCarregarDados.doClick();
         setVisible(true);
+        tfId.requestFocus();
     }
 }

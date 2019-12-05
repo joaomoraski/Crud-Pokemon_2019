@@ -38,7 +38,7 @@ public class MenuPrincipal extends JFrame {
 
     public MenuPrincipal(Dimension dimensao) {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(dimensao);
+        setSize(650,200);
         setTitle(lbTitulo.getText());
 
         cp = getContentPane();
@@ -78,7 +78,6 @@ public class MenuPrincipal extends JFrame {
             }
         });
 
-        pack();
         setLocationRelativeTo(null);
         setVisible(true);
     }

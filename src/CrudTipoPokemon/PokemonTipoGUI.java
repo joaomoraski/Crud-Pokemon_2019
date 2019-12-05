@@ -1,10 +1,9 @@
 package CrudTipoPokemon;
 
-import static com.sun.glass.ui.Cursor.setVisible;
-import static com.sun.java.accessibility.util.AWTEventMonitor.addWindowListener;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -28,6 +27,7 @@ import java.text.SimpleDateFormat;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
+import tools.CentroDoMonitorMaior;
 import tools.JanelaPesquisar;
 import tools.ManipulaImagem;
 
@@ -407,8 +407,12 @@ public class PokemonTipoGUI extends JDialog {
             }
         });
 
+        CentroDoMonitorMaior centroDoMonitorMaior = new CentroDoMonitorMaior();
+        setLocation(centroDoMonitorMaior.getCentroMonitorMaior(this));
+        setLocationRelativeTo(null);
         setModal(true);
         btCarregarDados.doClick();
         setVisible(true);
+        tfChave.requestFocus();
     }
 }
